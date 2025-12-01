@@ -8,6 +8,10 @@ from .models import post
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password,check_password
 from my_project.models import Users
+import jwt
+from django.conf import settings
+from datetime import datetime,timedelta
+from zoneinfo import ZoneInfo
 
 
 # Create your views here.
@@ -180,36 +184,113 @@ def signUp(request):
     return JsonResponse({"status":"success"},status=200)
 
 
+# @csrf_exempt
+# def login(request):
+#     if request.method == "POST":
+#         data = request.POST
+#         print(data)
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         if not username or not password:
+#             return JsonResponse(
+#                 {"status": "failure", "message": "username and password required"},
+#                 status=400
+#             )
+#         user = Users.objects.filter(username=username).first()
+#         if user is None:
+#             return JsonResponse(
+#                 {"status": "failure", "message": "user not found"},
+#                 status=400
+#             )
+#         if check_password(password, user.password):
+#             # token="a json web token"
+#             payload={"username":username,"email":user.email,"id":user.id}
+
+#             token=jwt.encode(payload,settings.SECRET_KEY,algorithm='Hs256')
+#             return JsonResponse(
+#                 {"status": "success", "message": "successfully logged in",'token':token},
+#                 status=200
+#             )
+#         else:
+#             return JsonResponse(
+#                 {"status": "failure", "message": "invalid password"},status=400)
+
+# ---------------------------------------------------------------------
+
+# @csrf_exempt
+# def login(request):
+#     if request.method == "POST":
+#         data = request.POST
+#         print(data)
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         if not username or not password:
+#             return JsonResponse(
+#                 {"status": "failure", "message": "username and password required"},
+#                 status=400
+#             )
+
+#         user = Users.objects.filter(username=username).first()
+#         issused_time=datetime.now(zoneinfo("Asia/kolkatha"))
+#         if user is None:
+#             return JsonResponse(
+#                 {"status": "failure", "message": "user not found"},
+#                 status=400
+#             )
+
+#         if check_password(password, user.password):
+
+#             payload = {
+#                 "username": username,
+#                 "email": user.email,
+#                 "id": user.id
+#             }
+#             payload={"username":username,"email":user.email,"id":user.id,"issused_time":issused_time}
+#             token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+#             return JsonResponse(
+#                 {"status": "success", "message": "successfully logged in", "token": token,"issued_at":issused_time},
+#                 status=200
+#             )
+
+#         return JsonResponse({"status": "failure", "message": "invalid password"}, status=400)
+# ---------------------------------------------------------------------------
+
+
 @csrf_exempt
 def login(request):
-    if request.method == "POST":
-        data = request.POST
+    if request.method=="POST":
+        data=request.POST
         print(data)
+        username=data.get('username')
+        password=data.get("password")        
+        try:
+            user=Users.objects.get(username=username)
+            issued_time=datetime.now(ZoneInfo("Asia/Kolkata"))
+            expired_time=issued_time+timedelta(minutes=25)
+            if check_password(password,user.password):
+                # token="a json web token"
+                #creating jwt token
+                payload={"username":username,"email":user.email,"id":user.id,"exp":expired_time}
+                token=jwt.encode(payload,settings.SECRET_KEY,algorithm="HS256")
+                return JsonResponse({"status":'successfully loggedin','token':token,"issued_at":issued_time,"expired at":expired_time,"expired_in":int((expired_time-issued_time).total_seconds()/60)},status=200)
+            else:
+                return JsonResponse({"status":'failure','message':'invalid password'},status=400)
+        except Users.DoesNotExist:
+            return JsonResponse({"status":'failure','message':'user not found'},status=400)
 
-        username = data.get("username")
-        password = data.get("password")
 
-        if not username or not password:
-            return JsonResponse(
-                {"status": "failure", "message": "username and password required"},
-                status=400
-            )
-        user = Users.objects.filter(username=username).first()
-        if user is None:
-            return JsonResponse(
-                {"status": "failure", "message": "user not found"},
-                status=400
-            )
-        if check_password(password, user.password):
-            return JsonResponse(
-                {"status": "success", "message": "successfully logged in"},
-                status=200
-            )
-        else:
-            return JsonResponse(
-                {"status": "failure", "message": "invalid password"},
-                status=400
-            )
+
+
+
+
+
+
 
 
 
