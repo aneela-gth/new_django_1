@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+       h1{
+         background-color:rgb(222, 233, 102);
+         color:chocolate;
+         border:3px solid black;
+         /* display: inline-block; */
+         padding: 20px;
+         margin-top: 30px;
+       }
+       a{
+         text-decoration: none;
+         background-color: rgb(9, 179, 122);
+         color: rgb(25, 27, 30);
+         padding: 15px;
+         display: inline-block;
+         font-size: 20px ;
+         position: relative;
+         top:20px;
+       }
+        ul{
+            display: flex;
+            justify-content: space-between;
+            background-color: rgb(204, 132, 37);
+            border: 3px solid black;
+            padding: 10px;
+            margin: 0;
+        }
+        li{
+            list-style: none;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        li:hover{
+            color: black;
+        }
+
+    </style>
+</head>
+<body>
+    
+    {%extends 'welcome.html'%}
+    {% block content%}
+    <h1>welcome to home page</h1>
+    {% endblock%}
+</body>
+</html>

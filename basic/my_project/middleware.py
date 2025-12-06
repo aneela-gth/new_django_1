@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from my_project.models import Users
 import re
 import json
+import jwt
+from django.conf import settings
 
 class indexMiddleware:
     def __init__(self,get_response):
@@ -127,4 +129,29 @@ class PasswordMiddleware:
         return self.get_response(request)
     
 
- 
+class AuthenticateMiddleware():
+    def __init__(self,get_response):
+        self.get_response=get_response
+    def __call__(self,request):
+        if request.path=="/users/":
+            token=request.headers.get("Authorization")
+            print(token,"token")
+            if not token:
+                return JsonResponse({"error":"Authorization token missing"},status=401)
+            token_value=token.split(" ")[1]
+            print(token_value,"token_value")
+            try:
+                decoded_data=jwt.decode(token_value,settings.SECRET_KEY,algorithms=["HS256"])
+                print(decoded_data,"decoded_data")
+                print(request)
+                request.token_data=decoded_data
+                print(request.token_data,"after")
+            except jwt.ExpiredSignatureError:
+                return JsonResponse({"error":"token has expired, please login again"},status=401)
+            except jwt.exceptions.InvalidSignatureError:
+                return JsonResponse({"error":"invalid token signature"},status=400)
+
+        return self.get_response(request)
+
+
+

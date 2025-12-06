@@ -12,6 +12,7 @@ import jwt
 from django.conf import settings
 from datetime import datetime,timedelta
 from zoneinfo import ZoneInfo
+from .models import Users
 
 
 # Create your views here.
@@ -181,7 +182,7 @@ def signUp(request):
             password=make_password(data.get('password'))
             
             )
-    return JsonResponse({"status":"success"},status=200)
+        return JsonResponse({"status":"success"},status=200)
 
 
 # @csrf_exempt
@@ -219,48 +220,6 @@ def signUp(request):
 
 # ---------------------------------------------------------------------
 
-# @csrf_exempt
-# def login(request):
-#     if request.method == "POST":
-#         data = request.POST
-#         print(data)
-
-#         username = data.get("username")
-#         password = data.get("password")
-
-#         if not username or not password:
-#             return JsonResponse(
-#                 {"status": "failure", "message": "username and password required"},
-#                 status=400
-#             )
-
-#         user = Users.objects.filter(username=username).first()
-#         issused_time=datetime.now(zoneinfo("Asia/kolkatha"))
-#         if user is None:
-#             return JsonResponse(
-#                 {"status": "failure", "message": "user not found"},
-#                 status=400
-#             )
-
-#         if check_password(password, user.password):
-
-#             payload = {
-#                 "username": username,
-#                 "email": user.email,
-#                 "id": user.id
-#             }
-#             payload={"username":username,"email":user.email,"id":user.id,"issused_time":issused_time}
-#             token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-
-#             return JsonResponse(
-#                 {"status": "success", "message": "successfully logged in", "token": token,"issued_at":issused_time},
-#                 status=200
-#             )
-
-#         return JsonResponse({"status": "failure", "message": "invalid password"}, status=400)
-# ---------------------------------------------------------------------------
-
 
 @csrf_exempt
 def login(request):
@@ -284,17 +243,6 @@ def login(request):
         except Users.DoesNotExist:
             return JsonResponse({"status":'failure','message':'user not found'},status=400)
 
-
-
-
-
-
-
-
-
-
-
-
 @csrf_exempt
 def check(request):
     hashed="pbkdf2_sha256$600000$mi5aiszP0Yzo6tyPIHbQzs$MWaeuM4rrxJ3XyAPmM/33SZKRcJIBKtrlh4kF6nle/c="
@@ -304,3 +252,32 @@ def check(request):
     x=check_password(ipdata.get("ip"),hashed)
     return JsonResponse({"status":"success","data":x},status=200)
 
+
+
+@csrf_exempt
+def getAllusers(request):
+   if request.method=="GET":
+      users=list(Users.objects.values())
+      print(request.token_data,"token_data in view")
+      print(request.token_data.get("username"),"username from token")
+      print(users,"users list")
+      for  user in users:
+          print(user['username'],'username from users list')
+          if user["username"]==request.token_data.get("username"):
+             return JsonResponse({"status":"success","loggedin_user":request.token_data,"data":users,},status=401)
+          else:    
+           return JsonResponse({"status":"success","data":users},status=200)
+
+
+def home(request):
+    return render(request,'home.html')
+def aboutus(request):
+    return render(request,'about.html')
+def welcome(request):
+    return render(request,'welcome.html')
+def contact(request):
+    return render(request,'contact.html')
+def services(request):
+    return render(request,'services.html')
+def projects(request):
+    return render(request,'projects.html')
